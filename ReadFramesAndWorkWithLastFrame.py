@@ -13,6 +13,7 @@ import torch
 import time
 
 from video_capture import VideoCaptureThread
+from telegram_notification import send_telegram_image
 
 # --- rtsp stream ---
 stream_url = 'rtsp://admin:123456@192.168.1.10:554/main'
@@ -20,7 +21,10 @@ stream_url = 'rtsp://admin:123456@192.168.1.10:554/main'
 
 def alarm_sound():
     audio_file = os.path.dirname(__file__) + '\\mixkit-angry-cartoon-kitty-meow-94.wav'
-    playsound(audio_file, True)
+    try:
+        playsound(audio_file, True)
+    except:
+        print("Error with sound notification!!!")
 
 
 class FrameProcessor:
@@ -49,8 +53,12 @@ class FrameProcessor:
             print(eachObject["name"], " : ", eachObject["percentage_probability"], " : ", eachObject["box_points"])
             print("--------------------------------")
             current_datetime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-            new_file_name = "detected_" + eachObject["name"] + current_datetime + ".jpg"
+            new_file_name = "detections/" + eachObject["name"] + current_datetime + ".jpg"
+            if not os.path.isdir("detections"):
+                os.mkdir("detections")
             shutil.copyfile("last.jpg", new_file_name)
+            if eachObject["name"] == "cat":
+                send_telegram_image(new_file_name, "Cat detected"+str(current_datetime))
 
 
 def main():
@@ -61,6 +69,7 @@ def main():
     t_start = datetime.datetime.now()
 
     cap = VideoCaptureThread(stream_url).start()
+    # For test: from default camera with ID = 0
     #cap = VideoCaptureThread().start()
 
     while True:
