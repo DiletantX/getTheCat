@@ -4,6 +4,7 @@ import cv2
 import datetime
 from imageai.Detection import ObjectDetection
 import os
+import shutil
 
 from playsound import playsound
 import cProfile
@@ -34,7 +35,7 @@ class FrameProcessor:
         #self.detector.setModelTypeAsRetinaNet()
         #self.detector.setModelPath(os.path.join(self.execution_path, "..//retinanet_resnet50_fpn_coco-eeacb38b.pth"))
         self.detector.loadModel()
-        self.custom_objects = self.detector.CustomObjects(cat=True)# ,person=True)
+        self.custom_objects = self.detector.CustomObjects(cat=True, person=True, dog=True, bird=True, cow=True, horse=True)
 
     def process_single_frame(self, frame):
 
@@ -43,13 +44,13 @@ class FrameProcessor:
                                                           minimum_percentage_probability=30,
                                                           custom_objects=self.custom_objects)
         for eachObject in detections:
-            alarm_sound()
+            if eachObject["name"] == "cat":
+                alarm_sound()
             print(eachObject["name"], " : ", eachObject["percentage_probability"], " : ", eachObject["box_points"])
             print("--------------------------------")
-        if detections:
             current_datetime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-            new_file_name = "detected_" + current_datetime + ".jpg"
-            os.rename("last.jpg", new_file_name)
+            new_file_name = "detected_" + eachObject["name"] + current_datetime + ".jpg"
+            shutil.copyfile("last.jpg", new_file_name)
 
 
 def main():
@@ -63,22 +64,21 @@ def main():
     #cap = VideoCaptureThread().start()
 
     while True:
-    #for i in range(1,21):
+    #for i in range(1,3):
         ret, frame = cap.read()
 
         if ret:
             fp.process_single_frame(frame)
+            #height, width, channels = frame.shape
+            #print(f"Resolution: {width}x{height}")
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-        time.sleep(0.8 )
+        time.sleep(0.8)
 
     delta_t = datetime.datetime.now() - t_start
     print("Process took " + str(delta_t))
-    # close stream
+
     cap.stop()
     cap.release()
-    # close window
     cv2.destroyAllWindows()
     #profiler
     #profiler.disable()
