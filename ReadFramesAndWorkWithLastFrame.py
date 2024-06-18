@@ -59,6 +59,9 @@ class FrameProcessor:
             shutil.copyfile("last.jpg", new_file_name)
             if eachObject["name"] == "cat":
                 send_telegram_image(new_file_name, "Cat detected"+str(current_datetime))
+            elif eachObject["name"] != "person":
+                send_telegram_image(new_file_name, "Some animals detected")
+
 
 
 def main():
@@ -68,9 +71,9 @@ def main():
     fp = FrameProcessor()
     t_start = datetime.datetime.now()
 
-    cap = VideoCaptureThread(stream_url).start()
+    #cap = VideoCaptureThread(stream_url).start()
     # For test: from default camera with ID = 0
-    #cap = VideoCaptureThread().start()
+    cap = VideoCaptureThread().start()
 
     while True:
     #for i in range(1,3):
