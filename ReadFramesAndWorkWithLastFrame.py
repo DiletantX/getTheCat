@@ -16,7 +16,7 @@ from video_capture import VideoCaptureThread
 from telegram_notification import send_telegram_image
 
 # --- rtsp stream ---
-stream_url = 'rtsp://admin:123456@192.168.1.10:554/main'
+stream_url = 'rtsp://admin:123456@192.168.1.10:554/stream1'
 
 
 def alarm_sound():
@@ -59,8 +59,8 @@ class FrameProcessor:
             shutil.copyfile("last.jpg", new_file_name)
             if eachObject["name"] == "cat":
                 send_telegram_image(new_file_name, "Cat detected"+str(current_datetime))
-            elif eachObject["name"] != "person":
-                send_telegram_image(new_file_name, "Some animals detected")
+            #elif eachObject["name"] != "person":
+            #    send_telegram_image(new_file_name, "Some animals detected")
 
 
 
@@ -71,18 +71,18 @@ def main():
     fp = FrameProcessor()
     t_start = datetime.datetime.now()
 
-    #cap = VideoCaptureThread(stream_url).start()
-    # For test: from default camera with ID = 0
-    cap = VideoCaptureThread().start()
+    cap = VideoCaptureThread(stream_url).start()
+    # For test: from default camera which normally has ID = 0 (if camera exists on device)
+    #cap = VideoCaptureThread().start()
 
     while True:
-    #for i in range(1,3):
+    #for i in range(1,21):
         ret, frame = cap.read()
 
         if ret:
             fp.process_single_frame(frame)
-            #height, width, channels = frame.shape
-            #print(f"Resolution: {width}x{height}")
+
+        #print("..." + str(i) + " detections done")
 
         time.sleep(0.8)
 
@@ -95,7 +95,7 @@ def main():
     #profiler
     #profiler.disable()
     #stats = pstats.Stats(profiler)
-    #stats.sort_stats('tottime').print_stats(15)
+    #stats.sort_stats('cumtime').print_stats(15)
 
 
 main()
