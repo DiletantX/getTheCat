@@ -39,28 +39,27 @@ class FrameProcessor:
         #self.detector.setModelTypeAsRetinaNet()
         #self.detector.setModelPath(os.path.join(self.execution_path, "..//retinanet_resnet50_fpn_coco-eeacb38b.pth"))
         self.detector.loadModel()
-        self.custom_objects = self.detector.CustomObjects(cat=True, person=True, dog=True, bird=True, cow=True, horse=True)
+        self.custom_objects = self.detector.CustomObjects(cat=True, person=True, dog=True)
+        if not os.path.isdir("detections"):
+            os.mkdir("detections")
 
     def process_single_frame(self, frame):
 
         detections = self.detector.detectObjectsFromImage(input_image=frame,
                                                           output_image_path=os.path.join(self.execution_path, "last.jpg"),
-                                                          minimum_percentage_probability=30,
+                                                          minimum_percentage_probability=20,
                                                           custom_objects=self.custom_objects)
         for eachObject in detections:
-            if eachObject["name"] == "cat":
-                alarm_sound()
             print(eachObject["name"], " : ", eachObject["percentage_probability"], " : ", eachObject["box_points"])
             print("--------------------------------")
             current_datetime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
             new_file_name = "detections/" + eachObject["name"] + current_datetime + ".jpg"
-            if not os.path.isdir("detections"):
-                os.mkdir("detections")
             shutil.copyfile("last.jpg", new_file_name)
             if eachObject["name"] == "cat":
+                alarm_sound()
                 send_telegram_image(new_file_name, "Cat detected"+str(current_datetime))
-            #elif eachObject["name"] != "person":
-            #    send_telegram_image(new_file_name, "Some animals detected")
+            elif eachObject["name"] != "person":
+                send_telegram_image(new_file_name, "Some animals detected"+str(current_datetime))
 
 
 
@@ -84,7 +83,7 @@ def main():
 
         #print("..." + str(i) + " detections done")
 
-        time.sleep(0.8)
+        time.sleep(1)
 
     delta_t = datetime.datetime.now() - t_start
     print("Process took " + str(delta_t))
