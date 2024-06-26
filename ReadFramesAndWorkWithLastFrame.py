@@ -44,11 +44,12 @@ class FrameProcessor:
             os.mkdir("detections")
 
     def process_single_frame(self, frame):
-
+        print("-....", end='')
         detections = self.detector.detectObjectsFromImage(input_image=frame,
                                                           output_image_path=os.path.join(self.execution_path, "last.jpg"),
                                                           minimum_percentage_probability=20,
                                                           custom_objects=self.custom_objects)
+        print("...+")
         for eachObject in detections:
             print(eachObject["name"], " : ", eachObject["percentage_probability"], " : ", eachObject["box_points"])
             print("--------------------------------")
@@ -77,13 +78,22 @@ def main():
     while True:
     #for i in range(1,21):
         ret, frame = cap.read()
-
+        print("*...", end='')
         if ret:
             fp.process_single_frame(frame)
 
         #print("..." + str(i) + " detections done")
+        print("...*")
+        time.sleep(2)
 
-        time.sleep(1)
+        if not ret:
+            print("not ret")
+            time.sleep(5)
+            ret, frame = cap.read()
+            if not ret:
+                print("had to restart video capturing")
+                cap.restart()
+
 
     delta_t = datetime.datetime.now() - t_start
     print("Process took " + str(delta_t))

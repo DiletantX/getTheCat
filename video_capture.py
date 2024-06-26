@@ -14,7 +14,14 @@ class VideoCaptureThread:
 
     def start(self):
         self.thread.start()
+        self.stopped = False
         return self
+
+    def restart(self):
+        self.stop()
+        self.release()
+        self.__init__(self.src)
+        self.start()
 
     def update(self):
         while not self.stopped:
@@ -31,5 +38,8 @@ class VideoCaptureThread:
 
     def release(self):
         self.cap.release()
+
+    def is_opened(self):
+        return self.cap.isOpened()
 
 
