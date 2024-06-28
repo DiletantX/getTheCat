@@ -50,6 +50,7 @@ class FrameProcessor:
                                                           minimum_percentage_probability=20,
                                                           custom_objects=self.custom_objects)
         print("...+")
+        detected = False
         for eachObject in detections:
             print(eachObject["name"], " : ", eachObject["percentage_probability"], " : ", eachObject["box_points"])
             print("--------------------------------")
@@ -59,8 +60,14 @@ class FrameProcessor:
             if eachObject["name"] == "cat":
                 alarm_sound()
                 send_telegram_image(new_file_name, "Cat detected"+str(current_datetime))
+                detected = True
             elif eachObject["name"] != "person":
+                detected = True
                 send_telegram_image(new_file_name, "Some animals detected"+str(current_datetime))
+
+        return detected
+
+
 
 
 
@@ -80,7 +87,9 @@ def main():
         ret, frame = cap.read()
         print("*...", end='')
         if ret:
-            fp.process_single_frame(frame)
+            detected = fp.process_single_frame(frame)
+            if detected:
+                cap.write_short_video(10)
 
         #print("..." + str(i) + " detections done")
         print("...*")
