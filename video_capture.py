@@ -70,9 +70,9 @@ class VideoWriter:
         frame_rate = int(cap.get(cv2.CAP_PROP_FPS))
 
         # Define the codec and create VideoWriter object
-        fourcc = cv2.VideoWriter.fourcc(*'MJPG')
+        fourcc = cv2.VideoWriter.fourcc(*'mp4v')
         current_datetime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        output_file = 'video/output' + str(current_datetime) + '.avi'  # Output file name
+        output_file = 'video/output' + str(current_datetime) + '.mp4'  # Output file name
         self.out = cv2.VideoWriter(output_file, fourcc, frame_rate, (frame_width, frame_height))
 
         self.num_frames_to_capture = frame_rate * duration_seconds
@@ -90,6 +90,9 @@ class VideoWriter:
             self.frame_count += 1
             # Display the frame (optional)
             #cv2.imshow('Frame', frame)
+            if self.frame_count == self.num_frames_to_capture:
+                print("released")
+                self.out.release()
         else:
             print("VideoWriter: Unexpected amonut of frames to write to output")
         return
