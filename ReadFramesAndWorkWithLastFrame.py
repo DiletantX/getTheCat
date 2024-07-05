@@ -68,9 +68,6 @@ class FrameProcessor:
         return detected
 
 
-
-
-
 def main():
     # open stream
     #profiler = cProfile.Profile()
@@ -89,7 +86,8 @@ def main():
         if ret:
             detected = fp.process_single_frame(frame)
             if detected:
-                cap.write_short_video(10)
+                cap.write_short_video(5)
+                time.sleep(5)
 
         #print("..." + str(i) + " detections done")
         print("...*")
@@ -101,7 +99,7 @@ def main():
             ret, frame = cap.read()
             if not ret:
                 print("had to restart video capturing")
-                cap.restart()
+                cap = cap.restart()
 
 
     delta_t = datetime.datetime.now() - t_start
@@ -115,5 +113,5 @@ def main():
     #stats = pstats.Stats(profiler)
     #stats.sort_stats('cumtime').print_stats(15)
 
-
-main()
+if __name__ == '__main__':
+    main()

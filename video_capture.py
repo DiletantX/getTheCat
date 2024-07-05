@@ -15,7 +15,7 @@ class VideoCaptureThread:
         self.stopped = False
         self.thread = threading.Thread(target=self.update, args=())
         self.thread.daemon = True
-        self.writer = VideoWriter(self.cap,1)
+        self.writer = VideoWriter(self.cap,0)
 
     def start(self):
         self.thread.start()
@@ -26,14 +26,16 @@ class VideoCaptureThread:
         self.stop()
         self.release()
         self.__init__(self.src)
-        self.start()
+        return self.start()
 
     def update(self):
         while not self.stopped:
             if not self.cap.isOpened():
                 self.cap = cv2.VideoCapture(self.src)
+
             self.ret, self.frame = self.cap.read()
-            if not self.writer.finished():
+
+            if self.ret and not self.writer.finished():
                 self.writer.write(self.frame)
 
     def read(self):
@@ -57,7 +59,7 @@ class VideoCaptureThread:
 
 
 class VideoWriter:
-    def __init__(self, cap: cv2.VideoCapture, duration_seconds: int):
+    def __init__(self, cap: cv2.VideoCapture, duration_seconds):
         if not cap.isOpened():
             print("Error: Could not initialize video writer.")
 
@@ -73,7 +75,9 @@ class VideoWriter:
         fourcc = cv2.VideoWriter.fourcc(*'mp4v')
         current_datetime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
         output_file = 'video/output' + str(current_datetime) + '.mp4'  # Output file name
-        self.out = cv2.VideoWriter(output_file, fourcc, frame_rate, (frame_width, frame_height))
+
+        if duration_seconds > 0:
+            self.out = cv2.VideoWriter(output_file, fourcc, frame_rate, (frame_width, frame_height))
 
         self.num_frames_to_capture = frame_rate * duration_seconds
 
