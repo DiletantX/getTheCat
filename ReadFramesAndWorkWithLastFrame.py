@@ -14,6 +14,7 @@ import time
 
 from video_capture import VideoCaptureThread
 from telegram_notification import send_telegram_image
+import usb_relay
 
 # --- rtsp stream ---
 stream_url = 'rtsp://admin:123456@192.168.1.10:554/stream1'
@@ -86,8 +87,8 @@ def main():
         if ret:
             detected = fp.process_single_frame(frame)
             if detected:
-                cap.write_short_video(5)
-                time.sleep(5)
+                cap.write_short_video(10)
+                usb_relay.relay_on_for_x_sec(10)
 
         #print("..." + str(i) + " detections done")
         print("...*")
