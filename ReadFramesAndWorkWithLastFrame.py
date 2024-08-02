@@ -5,6 +5,10 @@ import datetime
 from imageai.Detection import ObjectDetection
 import os
 import shutil
+from pynput import keyboard
+from collections import deque
+
+
 
 from playsound import playsound
 import cProfile
@@ -18,6 +22,15 @@ import usb_relay
 
 # --- rtsp stream ---
 stream_url = 'rtsp://admin:123456@192.168.1.10:554/stream1'
+
+
+def on_press(key):
+    try:
+        if key.char == 'q':
+            print("Q key pressed. Exiting the loop.")
+            return False  # Stop listener to exit the loop
+    except AttributeError:
+        pass
 
 
 def alarm_sound():
@@ -43,6 +56,7 @@ class FrameProcessor:
         self.custom_objects = self.detector.CustomObjects(cat=True, person=True, dog=True)
         if not os.path.isdir("detections"):
             os.mkdir("detections")
+        self.persons_index_queue = deque(maxlen=3)
 
     def process_single_frame(self, frame):
         print("-....", end='')
@@ -52,19 +66,30 @@ class FrameProcessor:
                                                           custom_objects=self.custom_objects)
         print("...+")
         detected = False
+        person = False
         for eachObject in detections:
             print(eachObject["name"], " : ", eachObject["percentage_probability"], " : ", eachObject["box_points"])
             print("--------------------------------")
             current_datetime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
             new_file_name = "detections/" + eachObject["name"] + current_datetime + ".jpg"
             shutil.copyfile("last.jpg", new_file_name)
-            if eachObject["name"] == "cat":
-                alarm_sound()
-                send_telegram_image(new_file_name, "Cat detected"+str(current_datetime))
+            if eachObject["name"] == "person":
+                person = True
+
+            else:
                 detected = True
-            elif eachObject["name"] != "person":
-                detected = True
-                send_telegram_image(new_file_name, "Some animals detected"+str(current_datetime))
+
+        if sum(self.persons_index_queue) >= 2:
+            if detected or person:
+                send_telegram_image(new_file_name, "Paused due to many persons" + str(current_datetime))
+            print("persons were detected recently")
+            time.sleep(30)
+            detected = False
+        else:
+            if detected:
+                send_telegram_image(new_file_name, "Animals detected!" + str(current_datetime))
+
+        self.persons_index_queue.append(int(person))
 
         return detected
 
@@ -76,9 +101,13 @@ def main():
     fp = FrameProcessor()
     t_start = datetime.datetime.now()
 
-    cap = VideoCaptureThread(stream_url).start()
+    #cap = VideoCaptureThread(stream_url).start()
     # For test: from default camera which normally has ID = 0 (if camera exists on device)
-    #cap = VideoCaptureThread().start()
+    cap = VideoCaptureThread().start()
+
+    listener = keyboard.Listener(on_press=on_press)
+    listener.start()
+    print("Press 'Q' to quit the loop.")
 
     while True:
     #for i in range(1,21):
@@ -101,6 +130,9 @@ def main():
             if not ret:
                 print("had to restart video capturing")
                 cap = cap.restart()
+
+        if not listener.running:
+            break
 
 
     delta_t = datetime.datetime.now() - t_start

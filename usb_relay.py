@@ -4,7 +4,11 @@ import time
 
 def relay_on_for_x_sec(x: int):
 
-    usb_relay_com_port = serial.Serial("COM3",9600)
+    try:
+        usb_relay_com_port = serial.Serial("COM3",9600)
+    except:
+        print("cant open port")
+        return
 
     if usb_relay_com_port.is_open:
 
@@ -20,8 +24,7 @@ def relay_on_for_x_sec(x: int):
 
        usb_relay_com_port.write(off_cmd)
 
-
-    usb_relay_com_port.close()
+       usb_relay_com_port.close()
 
 
 if __name__ == '__main__':

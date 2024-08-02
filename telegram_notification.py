@@ -17,8 +17,12 @@ def send_telegram_image(image_path, caption=""):
     files = {'photo': open(image_path, 'rb')}
     data = {'chat_id': channel_id, 'caption': caption}
 
-    response = requests.post(url, files=files, data=data)
-    return response.json()
+    try:
+        response = requests.post(url, files=files, data=data)
+    except:
+        response = ''
+    finally:
+        return response.json()
 
 
 def get_channel_id():
