@@ -22,6 +22,7 @@ import usb_relay
 
 # --- rtsp stream ---
 stream_url = 'rtsp://admin:123456@192.168.1.10:554/stream1'
+stream2_url = 'rtsp://admin:12345@10.0.0.1:8080/h264.sdp'
 
 
 def on_press(key):
@@ -99,10 +100,13 @@ def main():
     #profiler = cProfile.Profile()
     #profiler.enable()
     fp = FrameProcessor()
+    fp2 = FrameProcessor()
     t_start = datetime.datetime.now()
 
     #cap = VideoCaptureThread(stream_url).start()
+    cap2 = VideoCaptureThread(stream2_url).start()
     # For test: from default camera which normally has ID = 0 (if camera exists on device)
+
     cap = VideoCaptureThread().start()
 
     listener = keyboard.Listener(on_press=on_press)
@@ -110,7 +114,6 @@ def main():
     print("Press 'Q' to quit the loop.")
 
     while True:
-    #for i in range(1,21):
         ret, frame = cap.read()
         print("*...", end='')
         if ret:
@@ -118,10 +121,7 @@ def main():
             if detected:
                 cap.write_short_video(10)
                 usb_relay.relay_on_for_x_sec(10)
-
-        #print("..." + str(i) + " detections done")
         print("...*")
-        time.sleep(2)
 
         if not ret:
             print("not ret")
@@ -131,9 +131,19 @@ def main():
                 print("had to restart video capturing")
                 cap = cap.restart()
 
+        #ToDo: remove this mess, make a nice code to support N cameras
+        ret, frame = cap2.read()
+        print("**...", end='')
+        if ret:
+            detected = fp2.process_single_frame(frame)
+            if detected:
+                cap2.write_short_video(3)
+        print("...**")
+
+        time.sleep(2)
+
         if not listener.running:
             break
-
 
     delta_t = datetime.datetime.now() - t_start
     print("Process took " + str(delta_t))
@@ -145,6 +155,7 @@ def main():
     #profiler.disable()
     #stats = pstats.Stats(profiler)
     #stats.sort_stats('cumtime').print_stats(15)
+
 
 if __name__ == '__main__':
     main()
