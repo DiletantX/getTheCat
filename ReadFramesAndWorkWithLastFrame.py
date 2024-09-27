@@ -5,12 +5,12 @@ import datetime
 from imageai.Detection import ObjectDetection
 import os
 import shutil
-from pynput import keyboard
+
 from collections import deque
 
 
 
-from playsound import playsound
+
 import cProfile
 import pstats
 import torch
@@ -32,14 +32,6 @@ def on_press(key):
             return False  # Stop listener to exit the loop
     except AttributeError:
         pass
-
-
-def alarm_sound():
-    audio_file = os.path.dirname(__file__) + '\\mixkit-angry-cartoon-kitty-meow-94.wav'
-    try:
-        playsound(audio_file, True)
-    except:
-        print("Error with sound notification!!!")
 
 
 class FrameProcessor:
@@ -100,17 +92,15 @@ def main():
     #profiler = cProfile.Profile()
     #profiler.enable()
     fp = FrameProcessor()
-    fp2 = FrameProcessor()
+    #fp2 = FrameProcessor()
     t_start = datetime.datetime.now()
 
     #cap = VideoCaptureThread(stream_url).start()
-    cap2 = VideoCaptureThread(stream2_url).start()
+    #cap2 = VideoCaptureThread(stream2_url).start()
     # For test: from default camera which normally has ID = 0 (if camera exists on device)
 
     cap = VideoCaptureThread().start()
 
-    listener = keyboard.Listener(on_press=on_press)
-    listener.start()
     print("Press 'Q' to quit the loop.")
 
     while True:
@@ -131,19 +121,9 @@ def main():
                 print("had to restart video capturing")
                 cap = cap.restart()
 
-        #ToDo: remove this mess, make a nice code to support N cameras
-        ret, frame = cap2.read()
-        print("**...", end='')
-        if ret:
-            detected = fp2.process_single_frame(frame)
-            if detected:
-                cap2.write_short_video(3)
-        print("...**")
 
         time.sleep(2)
 
-        if not listener.running:
-            break
 
     delta_t = datetime.datetime.now() - t_start
     print("Process took " + str(delta_t))
