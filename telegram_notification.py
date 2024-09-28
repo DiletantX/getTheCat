@@ -20,7 +20,7 @@ def send_telegram_image(image_path, caption=""):
     try:
         response = requests.post(url, files=files, data=data)
     except:
-        response = ''
+        response = requests.Response('no response')
     finally:
         return response.json()
 
