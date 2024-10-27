@@ -95,11 +95,11 @@ def main():
     #fp2 = FrameProcessor()
     t_start = datetime.datetime.now()
 
-    #cap = VideoCaptureThread(stream_url).start()
+    cap = VideoCaptureThread(stream_url).start()
     #cap2 = VideoCaptureThread(stream2_url).start()
     # For test: from default camera which normally has ID = 0 (if camera exists on device)
 
-    cap = VideoCaptureThread().start()
+    #cap = VideoCaptureThread().start()
 
     print("Press 'Q' to quit the loop.")
 
