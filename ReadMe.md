@@ -1,5 +1,7 @@
 # GetTheCat
 
+Do you want cats out of your garden automatically with AI and notification to your mobile (with photo of the intruder)? Then continue reading!
+
 ## Introduction
 For those who have a garden or any piece of land, cats making toilet there is a known problem. 
 This problem has a lot of solutions which don't work, including the ones which I checked myself: 
