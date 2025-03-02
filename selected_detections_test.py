@@ -1,5 +1,5 @@
 import unittest
-from ReadFramesAndWorkWithLastFrame import FrameProcessor
+from detector import FrameProcessor
 
 
 class MyTestCase(unittest.TestCase):

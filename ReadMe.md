@@ -103,6 +103,9 @@ Tkinter is installed by apt on Debian: (but on Windows it is installed by pip as
 
     # On Debian:
     sudo apt install python3-tk
+	
+	# On Windows:
+	pip 
 
 Install image ai (if not yet installed)
 
@@ -122,7 +125,7 @@ To test telegram notifications run:
 
 Expected results: no exceptions, valid response, you got a test message in your bot's channel.
 
-In case you don't need telegram notifications - remove it from the ReadFramesAndWorkWithLastFrame.py.
+In case you don't need telegram notifications - remove it from the main.py.
 
 #### Test installation
 
@@ -149,7 +152,7 @@ Connect camera to supply and network, Ensure you can ping it and connect with br
 Set up your camera to be reachable in the network. Set up the best resolution. Most surveilance cameras have 2 streams: main and secondary, we should normally aim for the main stream since it usually has better resolution. URL differs for main and secondary streams. 
 The protocols can be RTSP or HTTP, which also impacts URL.
 
-In the ReadFramesAndWorkWithLastFrame.py define URL, for example for the camera mentioned in the hardware examples:
+In the main.py define URL, for example for the camera mentioned in the hardware examples:
 
     stream_url = 'rtsp://admin:123456@192.168.1.10:554/stream1'
 
@@ -174,7 +177,7 @@ If the port is defined correctly, the LED on he USB relay should be ON for 10 se
 
 ### Software Usage
 
-    python3 ReadFramesAndWorkWithLastFrame.py
+    python3 main.py
 
 Enjoy!
 

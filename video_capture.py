@@ -10,6 +10,7 @@ class VideoCaptureThread:
     def __init__(self, src=0):
         self.src = src
         self.cap = cv2.VideoCapture(src)
+
         self.ret = False
         self.frame = None
         self.stopped = False
