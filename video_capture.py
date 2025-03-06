@@ -3,6 +3,8 @@ import cv2
 import threading
 import time
 import os
+import numpy as np
+from logger import get_logger
 
 class VideoCaptureThread:
     def __init__(self, src=0, use_knn=False):
@@ -12,7 +14,7 @@ class VideoCaptureThread:
         self.use_knn = use_knn
         # Initialize background subtractor if KNN mode is enabled
         if self.use_knn:
-            self.bg_subtractor = cv2.createBackgroundSubtractorKNN(history=100, dist2Threshold=200, detectShadows=False)
+            self.bg_subtractor = cv2.createBackgroundSubtractorKNN(history=200, dist2Threshold=200, detectShadows=True)
         else:
             self.bg_subtractor = None
 
@@ -54,6 +56,8 @@ class VideoCaptureThread:
                 # Write the frame (or mask) if video writing is active
                 if not self.writer.finished():
                     self.writer.write(self.frame)
+            else:
+                get_logger().debug("No Ret inside video_capture update()")
 
             if self.fps > 0:
                 t_elapsed = time.time() - t0
@@ -63,7 +67,37 @@ class VideoCaptureThread:
 
 
     def read(self):
-        return self.ret, self.frame, self.mask
+        return self.ret, self.frame, self.mask, 1
+
+    def read_pre_processed(self):
+        if not self.use_knn:
+            return self.read()
+        elif not self.mask is None and not self.frame is None:
+            if len(self.mask.shape) == 3 and self.mask.shape[2] == 3:
+                # Convert BGR image to grayscale
+                gray = cv2.cvtColor(self.mask, cv2.COLOR_BGR2GRAY)
+            else:
+                # Frame is already grayscale or in an unexpected format
+                gray = self.mask
+            avg_intensity = np.mean(gray)
+            num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(gray, connectivity=8)
+            # Find the label of the largest component (ignore label 0, which is the background)
+            if len(stats) > 1:
+                largest_label = 1 + np.argmax(stats[1:, cv2.CC_STAT_AREA])
+            else:
+                largest_label = 0
+            # Create an empty self.mask and keep only the largest component
+            largest_component_mask = np.zeros(gray.shape, dtype=np.uint8)
+            largest_component_mask[labels == largest_label] = 255
+            threshold_value = avg_intensity * 1.25 + 1
+            _, mask_black_white = cv2.threshold(gray, threshold_value, 255, cv2.THRESH_BINARY)
+            mask_final = cv2.bitwise_and(mask_black_white,mask_black_white, mask=largest_component_mask)
+            masked_frame = cv2.bitwise_and(self.frame, self.frame, mask=mask_final)
+            avg_of_final = np.mean(masked_frame)
+
+            return self.ret, masked_frame, mask_final, avg_of_final
+        else:
+            return None, None, None, 0
 
     def stop(self):
         self.stopped = True

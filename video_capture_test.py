@@ -17,41 +17,14 @@ class MyTestCase(unittest.TestCase):
 
         while cap.is_opened():
             t0 = time.time()
-            ret, frame, mask = cap.read()
+            ret, frame, mask, score = cap.read_pre_processed()
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
                 sleep(1)
             else:
 
-                if len(mask.shape) == 3 and mask.shape[2] == 3:
-                    # Convert BGR image to grayscale
-                    gray = cv.cvtColor(mask, cv.COLOR_BGR2GRAY)
-                else:
-                    # Frame is already grayscale or in an unexpected format
-                    gray = mask
-                #gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-                avg_intensity = np.mean(gray)
-                threshold_value = avg_intensity * 4 + 1
-                _, mask_black_white = cv.threshold(gray, threshold_value, 255, cv.THRESH_BINARY)
-                avg_of_mask = np.mean(mask_black_white)
-                #print(str(avg_intensity) + "    ->    " + str(avg_of_mask) )
+                cv.imshow('frame', frame )
 
-                # Define the text to overlay
-                text = str(avg_intensity) + "    ->    " + str(avg_of_mask)
-                font = cv.FONT_HERSHEY_SIMPLEX
-                org = (50, 50)  # Bottom-left corner of the text in the image
-                fontScale = 1
-                color = (255, 255, 255)  # Green text
-                thickness = 2
-                lineType = cv.LINE_AA
-
-                # Draw the text on the frame
-
-
-                masked_frame = cv.bitwise_and(frame, frame, mask=mask_black_white)
-                cv.putText(masked_frame, text, org, font, fontScale, color, thickness, lineType)
-
-                cv.imshow('frame', masked_frame )
 
 
 

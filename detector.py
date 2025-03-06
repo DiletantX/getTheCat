@@ -29,7 +29,7 @@ class FrameProcessor:
         self.custom_objects = self.detector.CustomObjects(cat=True, person=True, dog=True)
         if not os.path.isdir("detections"):
             os.mkdir("detections")
-        self.persons_index_queue = deque(maxlen=3)
+        self.persons_index_queue = deque(maxlen=10)
         get_logger().info("FrameProcessor Initializing Complete")
 
     def process_single_frame(self, frame):
@@ -49,12 +49,12 @@ class FrameProcessor:
                 get_logger().info("--------------------------------")
                 new_file_name = "detections/" + detected_object["name"] + current_datetime + ".jpg"
                 shutil.copyfile(LAST_JPG, new_file_name)
-                if detected_object["name"] == "person":
+                if detected_object["name"] == "person" and detected_object["percentage_probability"] > 90:
                     person = True
-                else:
+                elif detected_object["name"] != "person":
                     detected = True
 
-            if sum(self.persons_index_queue) >= 2:
+            if sum(self.persons_index_queue) >= 3:
                 if detected or person:
                     send_telegram_image(LAST_JPG, "Paused due to many persons" + str(current_datetime))
                 get_logger().info("persons were detected recently")
@@ -64,6 +64,6 @@ class FrameProcessor:
                 if detected:
                     send_telegram_image(LAST_JPG, "Animals detected!" + str(current_datetime))
 
-            self.persons_index_queue.append(int(person))
+        self.persons_index_queue.append(int(person))
 
         return detected

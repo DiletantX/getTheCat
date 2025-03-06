@@ -21,38 +21,41 @@ def main():
     fp = FrameProcessor()
     #fp2 = FrameProcessor()
     t_start = datetime.datetime.now()
-    cap = VideoCaptureThread(stream_url).start()
+    #cap = VideoCaptureThread(stream_url).start()
     #cap2 = VideoCaptureThread(stream2_url).start()
     # For test: from default camera which normally has ID = 0 (if camera exists on device)
 
-    #cap = VideoCaptureThread().start()
+    cap = VideoCaptureThread(stream_url, use_knn=True).start()
 
     print("Press 'Q' to quit the loop.")
 
     while True:
-        ret, frame = cap.read()
+        ret, frame, mask, score = cap.read_pre_processed()
         get_logger().debug("*...")
-        if ret:
+
+        if ret and score > 0.2:
+            get_logger().debug("score = " + str(score) )
             detected = fp.process_single_frame(frame)
             if detected:
                 cap.write_short_video(10)
                 usb_relay.relay_on_for_x_sec(10)
-        get_logger().debug("...*")
+            get_logger().debug("...*")
 
         if not ret:
             get_logger().error("Video capturing didn't return any output. May be, the camera is unreachable or overloaded. Will try to wait a few seconds and restart capturing ")
-            time.sleep(5)
-            ret, frame = cap.read()
+            time.sleep(2)
+            ret, frame, mask, score = cap.read()
             if not ret:
                 get_logger().info("Attempting to restart video capturing...")
                 cap = cap.restart()
+                time.sleep(2)
 
+        #if ret:
+        #    cv2.imshow("frame", frame)
+        #if cv2.waitKey(1) == ord('q'):
+        #    break
 
-        time.sleep(2)
-
-
-    delta_t = datetime.datetime.now() - t_start
-    print("Process took " + str(delta_t))
+        time.sleep(0.5)
 
     cap.stop()
     cap.release()
